@@ -1,5 +1,8 @@
 import argparse
 from datetime import datetime, timedelta
+from colorama import init, Fore
+
+init(autoreset=True)
 
 
 def parse_date(date_str):
@@ -11,11 +14,11 @@ def parse_date(date_str):
 
 def calculate_dates(start_date, intervals, interval_years):
     dates = []
-    current_date = start_date
+    date = start_date
 
     for _ in range(intervals):
-        current_date += timedelta(days=365 * interval_years)
-        dates.append((current_date - timedelta(days=1)).strftime('%d/%m/%Y'))
+        date += timedelta(days=365 * interval_years)
+        dates.append((date - timedelta(days=1)).strftime('%d/%m/%Y'))
 
     return dates
 
@@ -29,28 +32,20 @@ def main(data_publico, data_rj):
     future_ats = calculate_dates(data_publico, marcos, anos_trienio)
     future_license = calculate_dates(data_rj, marcos, anos_premio)
 
-    trienio_premio = {}
+    trienio_premio = []
 
     for idx, date in enumerate(future_ats, start=1):
         percentual_trienio += 5
-
-        if anos_trienio not in trienio_premio:
-            trienio_premio[anos_trienio] = []
-
-        trienio_premio[anos_trienio].append(f'{date} | ATS {str(idx).zfill(2)} | ({percentual_trienio}%)')
-
+        trienio_premio.append((date, f'{anos_trienio} anos | ATS {str(idx).zfill(2)} | ({percentual_trienio}%)'))
         anos_trienio += 3
 
     for idx, date in enumerate(future_license, start=1):
-
-        if anos_premio not in trienio_premio:
-            trienio_premio[anos_premio] = []
-
-        trienio_premio[anos_premio].append(f'{date} | Licença-prêmio {str(idx).zfill(2)}')
-
+        trienio_premio.append((date, f'{anos_premio} anos | Licença-prêmio {str(idx).zfill(2)}'))
         anos_premio += 5
 
-    return sorted(trienio_premio.items())
+    trienio_premio.sort(key=lambda x: datetime.strptime(x[0], '%d/%m/%Y'))
+
+    return trienio_premio
 
 
 if __name__ == '__main__':
@@ -61,8 +56,14 @@ if __name__ == '__main__':
                         help='Ingresso no Estado do RJ no formato dd/mm/yyyy (opcional, padrão: 19/05/2022).')
     args = parser.parse_args()
 
+    current_date = datetime.now()
     calculos = main(args.data_publico, args.data_rj)
 
-    for anos, valores in calculos:
-        for valor in valores:
-            print(f'{str(anos).zfill(2)} anos: {valor}')
+    FIRST_HIGHLIGHTED = False
+
+    for data, valor in calculos:
+        if not FIRST_HIGHLIGHTED and datetime.strptime(data, '%d/%m/%Y') >= current_date:
+            print(f'{Fore.RED}{data}: {valor}')
+            FIRST_HIGHLIGHTED = True
+        else:
+            print(f'{data}: {valor}')
