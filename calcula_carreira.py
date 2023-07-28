@@ -1,5 +1,6 @@
 import argparse
 from datetime import datetime, timedelta
+
 from colorama import init, Fore
 
 init(autoreset=True)
@@ -23,7 +24,7 @@ def calculate_dates(start_date, intervals, interval_years):
     return dates
 
 
-def main(data_publico, data_rj, datas_tce):
+def main(ingresso_publico, ingresso_rj, ingresso_tce):
     marcos = 11
     anos_trienio = 3
     anos_premio = 5
@@ -31,25 +32,58 @@ def main(data_publico, data_rj, datas_tce):
     percentual_trienio = 5
     percentual_progressao = 5
 
-    future_ats = calculate_dates(data_publico, marcos, anos_trienio)
-    future_license = calculate_dates(data_rj, marcos, anos_premio)
-    future_progress = calculate_dates(data_tce, marcos, anos_progressao)
-
     trienio_premio = []
 
-    for idx, date in enumerate(future_ats, start=1):
-        percentual_trienio += 5
-        trienio_premio.append((date, f'{anos_trienio} anos | ATS {str(idx).zfill(2)} | ({percentual_trienio}%)'))
-        anos_trienio += 3
+    highlighted_ingresso_publico = False
+    highlighted_ingresso_rj = False
+    highlighted_ingresso_tce = False
 
-    for idx, date in enumerate(future_license, start=1):
-        trienio_premio.append((date, f'{anos_premio} anos | Licença-prêmio {str(idx).zfill(2)}'))
-        anos_premio += 5
 
-    for idx, date in enumerate(future_progress, start=1):
-        percentual_progressao += 5
-        trienio_premio.append((date, f'{anos_progressao} anos | ATS {str(idx).zfill(2)} | ({percentual_progressao}%)'))
-        anos_progressao += 3
+    current_date = datetime.now()
+
+    if ingresso_publico:
+        future_ats = calculate_dates(ingresso_publico, marcos, anos_trienio)
+
+        for idx, date in enumerate(future_ats, start=1):
+            date_obj = datetime.strptime(date, '%d/%m/%Y')
+            percentual_trienio += 5
+            cor = ''
+
+            if date_obj >= current_date and not highlighted_ingresso_publico:
+                cor = Fore.RED
+                highlighted_ingresso_publico = True
+
+            trienio_premio.append((date, f'{cor}{anos_trienio} anos | ATS {str(idx).zfill(2)} | ({percentual_trienio}%)'))
+            anos_trienio += 3
+
+    if ingresso_rj:
+        future_license = calculate_dates(ingresso_rj, marcos, anos_premio)
+
+        for idx, date in enumerate(future_license, start=1):
+            date_obj = datetime.strptime(date, '%d/%m/%Y')
+            cor = ''
+
+            if date_obj >= current_date and not highlighted_ingresso_rj:
+                cor = Fore.YELLOW
+                highlighted_ingresso_rj = True
+
+            trienio_premio.append((date, f'{cor}{anos_premio} anos | Licença-prêmio {str(idx).zfill(2)}'))
+            anos_premio += 5
+
+    if ingresso_tce:
+        future_progress = calculate_dates(ingresso_tce, marcos, anos_progressao)
+
+        for idx, date in enumerate(future_progress, start=1):
+            date_obj = datetime.strptime(date, '%d/%m/%Y')
+            percentual_progressao += 5
+            cor = ''
+
+            if date_obj >= current_date and not highlighted_ingresso_tce:
+                cor = Fore.BLUE
+                highlighted_ingresso_tce = True
+
+            trienio_premio.append((date, f'{cor}{anos_progressao} anos | ATS {str(idx).zfill(2)} | ({percentual_progressao}%)'))
+            anos_progressao += 3
 
     trienio_premio.sort(key=lambda x: datetime.strptime(x[0], '%d/%m/%Y'))
 
@@ -58,22 +92,15 @@ def main(data_publico, data_rj, datas_tce):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Calcula ATS e licença-prêmio.')
-    parser.add_argument('--ingresso_publico', type=parse_date, default='19/01/2021',
-                        help='Ingresso no serviço público no formato dd/mm/yyyy (opcional, padrão: 19/01/2021).')
-    parser.add_argument('--ingresso_rj', type=parse_date, default='19/05/2022',
-                        help='Ingresso no Estado do RJ no formato dd/mm/yyyy (opcional, padrão: 19/05/2022).')
-    parser.add_argument('--ingresso_tce', type=parse_date, default='22/03/2023',
-                        help='Ingresso no TCE-RJ no formato dd/mm/yyyy (opcional, padrão: 22/03/2023).')
+    parser.add_argument('--ingresso_publico', type=parse_date,
+                        help='Ingresso no serviço público no formato dd/mm/yyyy.')
+    parser.add_argument('--ingresso_rj', type=parse_date,
+                        help='Ingresso no Estado do RJ no formato dd/mm/yyyy.')
+    parser.add_argument('--ingresso_tce', type=parse_date,
+                        help='Ingresso no TCE-RJ no formato dd/mm/yyyy.')
     args = parser.parse_args()
 
-    current_date = datetime.now()
-    calculos = main(args.data_publico, args.data_rj, args.data_tce)
-
-    FIRST_HIGHLIGHTED = False
+    calculos = main(args.ingresso_publico, args.ingresso_rj, args.ingresso_tce)
 
     for data, valor in calculos:
-        if not FIRST_HIGHLIGHTED and datetime.strptime(data, '%d/%m/%Y') >= current_date:
-            print(f'{Fore.RED}{data}: {valor}')
-            FIRST_HIGHLIGHTED = True
-        else:
-            print(f'{data}: {valor}')
+        print(f'{data}: {valor}')
