@@ -3,7 +3,7 @@ from datetime import datetime
 
 import pytest
 
-from trienio_premio import parse_date, calculate_dates, main
+from calcula_carreira import parse_date, calculate_dates, main
 
 
 def test_parse_valid_date():
