@@ -32,7 +32,7 @@ def main(ingresso_publico, ingresso_rj, ingresso_tce):
     percentual_trienio = 5
     percentual_progressao = 5
 
-    trienio_premio = []
+    calculos = []
 
     highlighted_ingresso_publico = False
     highlighted_ingresso_rj = False
@@ -53,7 +53,7 @@ def main(ingresso_publico, ingresso_rj, ingresso_tce):
                 cor = Fore.RED
                 highlighted_ingresso_publico = True
 
-            trienio_premio.append((date, f'{cor}{anos_trienio} anos | ATS {str(idx).zfill(2)} | ({percentual_trienio}%)'))
+            calculos.append((date, f'{cor}{anos_trienio} anos | ATS {str(idx).zfill(2)} | ({percentual_trienio}%)'))
             anos_trienio += 3
 
     if ingresso_rj:
@@ -67,7 +67,7 @@ def main(ingresso_publico, ingresso_rj, ingresso_tce):
                 cor = Fore.YELLOW
                 highlighted_ingresso_rj = True
 
-            trienio_premio.append((date, f'{cor}{anos_premio} anos | Licença-prêmio {str(idx).zfill(2)}'))
+            calculos.append((date, f'{cor}{anos_premio} anos | Licença-prêmio {str(idx).zfill(2)}'))
             anos_premio += 5
 
     if ingresso_tce:
@@ -82,12 +82,12 @@ def main(ingresso_publico, ingresso_rj, ingresso_tce):
                 cor = Fore.BLUE
                 highlighted_ingresso_tce = True
 
-            trienio_premio.append((date, f'{cor}{anos_progressao} anos | ATS {str(idx).zfill(2)} | ({percentual_progressao}%)'))
+            calculos.append((date, f'{cor}{anos_progressao} anos | ATS {str(idx).zfill(2)} | ({percentual_progressao}%)'))
             anos_progressao += 3
 
-    trienio_premio.sort(key=lambda x: datetime.strptime(x[0], '%d/%m/%Y'))
+    calculos.sort(key=lambda x: datetime.strptime(x[0], '%d/%m/%Y'))
 
-    return trienio_premio
+    return calculos
 
 
 if __name__ == '__main__':
